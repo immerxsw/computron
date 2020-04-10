@@ -10,13 +10,22 @@ client.on('ready', () => {
 });
 
 const helpEmbed = new discord.MessageEmbed()
-    .setColor('#0099ff')
-    .setAuthor('Computron', 'https://i.imgur.com/s3HbSQW.jpg')
+    .setColor('#00e2ff')
+    .setDescription('Computron is essentially an AIO tool for server admins.')
+    .setAuthor('Computron', 'https://i.imgur.com/s3HbSQW.jpg', 'https://github.com/immerxdev/computron')
     .setTitle('Command List:')
     .addFields(
-        { name: '!role add role(s)', value: 'Adds you to one or multiple roles. Separate with a comma', inline: true },
-        { name: '!role del role(s)', value: 'Removes you from one or multiple roles. Separate with a comma', inline: true }
+        { name: '!role add *roles*', value: 'Adds you to one or multiple roles. Separate with a comma.', inline: true },
+        { name: '!role del *roles*', value: 'Removes you from one or multiple roles. Separate with a comma.', inline: true },
+        { name: '!broadcast *announcement*', value: 'Sends a server-wide broadcast to the announcements channel.', inline: true }
     )
+    .addFields(
+        { name: '!say *message*', value: 'Similar to broadcast, but it displays in the channel you typed the command.', inline: true },
+        { name: '!ban *ID*', value: 'Bans a user based on their user ID. Right click on a user and click *Copy ID*.', inline: true },
+        { name: '!kick *ID*', value: 'Kicks a user based on their user ID. Follow instructions under *!ban*.', inline: true }
+    )
+    .setTimestamp()
+	.setFooter('immerxdev on GitHub');
 
 const isValidCmd = (message, cmdName) => message.content.toLowerCase().startsWith(PREFIX + cmdName)
 const randomNumber = () => Math.floor(Math.random() * 100) + 1;
@@ -28,7 +37,7 @@ role.permissions.has('MANAGE_CHANNELS') ||
 role.permissions.has('MANAGE_GUILD') || 
 role.permissions.has('MANAGE_NICKNAMES');
 
-client.on('message', function(message) {
+client.on('message', async function(message) {
     if(message.author.bot) return;
     if(isValidCmd(message, "help")) {
         message.channel.send(helpEmbed);
@@ -91,5 +100,33 @@ client.on('message', function(message) {
                 message.channel.send("Role not found.");
             }
         });
+    }
+    else if(isValidCmd(message, "broadcast")) {
+        let announcement = message.content.substring(11);
+        let announcementsChannel = client.channels.cache.find(channel => channel.name.toLowerCase() === 'announcements');
+        if(announcementsChannel)
+            announcementsChannel.send('@here ' + announcement)
+    }
+    else if(isValidCmd(message, "say")) {
+        let phrase = message.content.substring(5);
+        message.channel.send(phrase)
+    }
+    else if(isValidCmd(message, "ban")) {
+        if(!message.member.hasPermission('BAN_MEMBERS')) {
+            message.channel.send("You dont have permission to use that command.");
+        }
+        else {
+            let memberId = message.content.substring(message.content.indexOf(' ') + 1);
+            let member = message.guild.members.cache.get(memberId);
+            if(member) {
+                member.ban();
+            }
+            else {
+                message.channel.send("Member does not exist.");
+            }
+        }
+    }
+    else if(isValidCmd(message, "kick")) {
+        
     }
 });
