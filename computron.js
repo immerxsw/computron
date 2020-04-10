@@ -117,16 +117,36 @@ client.on('message', async function(message) {
         }
         else {
             let memberId = message.content.substring(message.content.indexOf(' ') + 1);
-            let member = message.guild.members.cache.get(memberId);
-            if(member) {
-                member.ban();
+            try {
+                let bannedMember = await message.guild.members.ban(memberId);
+                if(bannedMember) {
+                    console.log(bannedMember.tag + " has been banned.");
+                }
+                else {
+                    console.log("Ban unsuccessful.")
+                }
             }
-            else {
-                message.channel.send("Member does not exist.");
+            catch(err) {
+                console.log(err);
             }
         }
     }
     else if(isValidCmd(message, "kick")) {
-        
+        if(!message.member.hasPermission('KICK_MEMBERS')) {
+            message.channel.send("You dont have permission to use that command.");
+        }
+        else {
+            let memberId = message.content.substring(message.content.indexOf(' ') + 1);
+            let member = message.guild.members.cache.get(memberId);
+            if(member) {
+                try {
+                    await member.kick();
+                    console.log('A member was kicked.');
+                }
+                catch(err) {
+                    console.log(err);
+                }
+            } 
+        }
     }
 });
